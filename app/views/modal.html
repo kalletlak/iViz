@@ -1,0 +1,76 @@
+<div class="modal fade">
+          <div class="modal-backdrop">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close"  data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Virtual Cohorts</h4>
+              </div>
+              <div class="modal-body">
+
+<div>
+   <table class="table table-bordered table-hover table-condensed">
+    <tr style="font-weight: bold">
+      <td style="width:20%">Name</td>
+      <td style="width:20%">Description</td>
+       <td style="width:10%">Color</td>
+      <td style="width:10%">Samples</td>
+      <td style="width:10%">Patients</td>
+      <td style="width:15%">Operations</td>
+    </tr>
+    <tr ng-repeat="vc in vcList">
+      <td>
+        <!-- editable name (text with validation) -->
+        <span editable-text="vc.studyName" e-name="studyName" e-form="rowform" e-required>
+          {{ vc.studyName || 'empty' }}
+        </span>
+      </td>
+      <td>
+        <!-- editable description (text with validation) -->
+        <span editable-text="vc.description" e-name="description" e-form="rowform" e-required>
+          {{ vc.description || 'empty' }}
+        </span>
+      </td>
+      <td>
+        <span>
+          <input colorpicker ng-model="hexPicker.color" type="text">
+        </span>
+      </td>
+      
+      <td>
+        <span>
+          {{ vc.samplesLength }}
+        </span>
+      </td>
+      <td>
+        <span>
+          {{ vc.patientsLength}}
+        </span>
+      </td>
+      
+      
+      <td style="white-space: nowrap">
+        <!-- form -->
+        <form editable-form name="rowform" onbeforesave="saveVC($data, vc.id,$index)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == vc">
+          <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary">
+            <em class="fa fa-save fa-2x"></em>
+          </button>
+          <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()" class="btn btn-default">
+            <em class="fa fa-times fa-2x"></em>
+          </button>
+        </form>
+        <div class="buttons" ng-show="!rowform.$visible">
+          <button class="btn btn-primary" ng-click="rowform.$show()"><em class="fa fa-pencil fa-2x"></em></button>
+          <button class="btn btn-danger" ng-click="removeVC($index)"><em class="fa fa-trash fa-2x"></em></button>
+           <button class="btn btn-success" ng-click="removeVC($index)"><em class="fa fa-share-alt fa-2x"></em></button>
+            <button class="btn btn-default" ng-click="removeVC($index)"><em class="fa fa-filter fa-2x"></em></button>
+        </div>  
+      </td>
+    </tr>
+  </table>
+
+  <button class="btn btn-default" onclick="document.location.href='/';">New virtual cohort</button>
+</div>
+ </div>
+            </div>
+          </div>
+        </div>

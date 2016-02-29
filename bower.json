@@ -13,14 +13,27 @@
     "underscore": "~1.8.3",
     "qtip2": "~2.2.1",
     "vue": "~1.0.15",
-    "font-awesome": "https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" 
+    "font-awesome": "^4.5.0",
+    "angular": "^1.5.0",
+    "angular-modal-service": "^0.9.10",
+    "angular-local-storage": "^0.2.5",
+    "angular-xeditable": "^0.1.10",
+    "angular-bootstrap-colorpicker": "^3.0.24",
+    "bootstrap-sass": "^3.3.6"
   },
   "overrides": {
     "bootstrap-sass": {
       "main": [
         "assets/stylesheets/_bootstrap.scss",
         "assets/fonts/bootstrap/*",
-        "assets/javascripts/bootstrap.js"
+        "assets/javascripts/bootstrap.js",
+        "assets/javascripts/bootstrap/*"
+      ]
+    },
+     "font-awesome": {
+      "main": [
+        "./css/font-awesome.css",
+        "./fonts/*"
       ]
     },
     "outlayer": {
@@ -35,7 +48,10 @@
       ]
     },
     "chosen": {
-      "main": ["chosen.jquery.min.js", "chosen.min.css"]
+      "main": [
+        "chosen.jquery.min.js",
+        "chosen.min.css"
+      ]
     },
     "qtip2": {
       "main": [

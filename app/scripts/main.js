@@ -71,6 +71,10 @@ var iViz = (function() {
 
           // ---- attach event listener for saving cohort ----
           $("#save_cohort_btn").click(function (){
+            var scope = angular.element(document.getElementById("container")).scope();
+            scope.$apply(function () {
+              scope.addVirtualStudy(selected_patients,selected_samples,patient_charts_inst.filters(),sample_charts_inst.filters());
+            });
           });
 
           // ---- attach event listener for importing cohort ----
