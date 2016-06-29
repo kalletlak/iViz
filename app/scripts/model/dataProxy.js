@@ -278,7 +278,7 @@
                           _indexSample += 1;
                           // mutation count
                           if (_ajaxMutationCountData[_sampleId] === undefined || _ajaxMutationCountData[_sampleId] === null) {
-                            _datum['mutation_count'] = 0;
+                            _datum['mutation_count'] = 'NA';
                           } else {
                             _datum['mutation_count'] = _ajaxMutationCountData[_sampleId];
                           }
