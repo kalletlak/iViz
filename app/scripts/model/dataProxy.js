@@ -53,8 +53,31 @@
       _ajaxSampleData = [], _ajaxPatientData = [],
       _ajaxPatient2SampleIdMappingObj = {}, _ajaxSample2PatientIdMappingObj = {},
       _ajaxMutationCountData = {}, _ajaxCnaFractionData = {},
-      _ajaxGeneticProfiles = {}, _ajaxCnaData = {}, _ajaxMutGenesData = {};
+      _ajaxGeneticProfiles = {}, _ajaxCnaData = {}, _ajaxMutGenesData = {},
+      _sequencedSampleIds = [], _cnaSampleIds = [], _allSampleIds = [];
 
+    function extractCaseLists(studyId,resp){
+      if(resp) {
+       var _lists = resp.split('\n');
+       for(var i = 0; i < _lists.length; i++) {
+       var _parts = _lists[i].split('\t');
+       if(_parts.length < 5) continue;
+       if (_parts[0] === studyId+"_sequenced") {
+       _sequencedSampleIds = _sequencedSampleIds.concat(_parts[4].trim().split(' '));
+       } else if (_parts[0] === studyId+"_cna") {
+       _cnaSampleIds = _cnaSampleIds.concat(_parts[4].trim().split(' '));
+       } else if (_parts[0] === studyId+"_all") {
+       _allSampleIds = _allSampleIds.concat(_parts[4].trim().split(' '));
+       }
+       }
+
+       //For efficient comparing, see StudyViewUtil.intersection
+       _allSampleIds = _allSampleIds.sort();
+       _sequencedSampleIds = _sequencedSampleIds.sort();
+       _cnaSampleIds = _cnaSampleIds.sort();
+
+       }
+    }
     // patient clinical attribute meta
     $.when.apply($, _studyIdArr.map(function (_studyId) {
       return $.ajax({
@@ -129,6 +152,26 @@
               }
             }
             _ajaxSampleData = _results;
+            $.when.apply($, _studyIdArr.map(function (_studyId) {
+              return $.ajax({
+                method: "POST",
+                url: PORTAL_INST_URL + '/webservice.do?',
+                data: {cmd: 'getCaseLists', cancer_study_id: _studyId}
+              });
+            })).done(function () {
+              if(_studyIdArr.length==1){
+               // _caseLists = $.extend({}, JSON.parse(arguments[0]),
+                // _caseLists);
+                //console.log(arguments[0])
+                extractCaseLists(_studyIdArr[0],arguments[0])
+              }else{
+                for (var i = 0; i < arguments.length; i++) {
+                  //console.log(arguments[i][0])
+                  extractCaseLists(_studyIdArr[i],arguments[i][0])
+                 // _caseLists = $.extend({}, JSON.parse(arguments[i][0]),
+                  // _caseLists);
+                }
+              }
 
             // id mapping
             $.when.apply($, _studyIdArr.map(function (_studyId) {
@@ -252,7 +295,6 @@
                             _ajaxCnaData.caseIds = _ajaxCnaData.caseIds.concat(arguments[i][0].caseIds);
                           }
                         }
-
                         // --- web API results converting ----
                         var _patientData = [], _sampleData = [];
                         var _patientIds = [];
@@ -376,6 +418,10 @@
                           _cnaAttrMeta.description = 'Copy Number Alterations';
                           _cnaAttrMeta.gene_list = _storedCnaGeneInventory;
                           _cnaAttrMeta.attr_id = 'cna_details';
+                          _cnaAttrMeta.options = {
+                            allCases : _allSampleIds,
+                            sequencedCases : _cnaSampleIds.length>0 ? _cnaSampleIds : _allSampleIds
+                          }
                           _ajaxSampleMeta.unshift(_cnaAttrMeta);
                         }
 
@@ -388,6 +434,10 @@
                           _mutDataAttrMeta.description = 'Mutated Genes';
                           _mutDataAttrMeta.gene_list = _storedMutGeneInventory;
                           _mutDataAttrMeta.attr_id = 'mutated_genes';
+                          _mutDataAttrMeta.options = {
+                            allCases : _allSampleIds,
+                            sequencedCases : _sequencedSampleIds.length>0 ? _sequencedSampleIds : _allSampleIds
+                          }
                           _ajaxSampleMeta.unshift(_mutDataAttrMeta);
                         }
                         
@@ -488,6 +538,7 @@
 
                         _callbackFunc(_result, _inputSampleList, _inputPatientList);
 
+                      });
                       });
                     });
                   });
