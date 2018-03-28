@@ -1416,27 +1416,19 @@ window.DataManagerForIviz = (function($, _) {
                   _.each(panel.genes, function(gene) {
                     if (!geneSampleMap[gene.hugoGeneSymbol]) {
                       geneSampleMap[gene.hugoGeneSymbol] = {
-                        sampleUids: []
+                        sampleUids: {}
                       }
                     }
-                    geneSampleMap[gene.hugoGeneSymbol].sampleUids = geneSampleMap[gene.hugoGeneSymbol].sampleUids.concat(panelSamplesMap[panel.genePanelId]);
+                    var samples = geneSampleMap[gene.hugoGeneSymbol].sampleUids.concat(panelSamplesMap[panel.genePanelId]);
+                    if (panelSamplesMap.hasOwnProperty(wholeExomeSequencedPanelId)) {
+                      samples = samples.concat(panelSamplesMap[wholeExomeSequencedPanelId]);
+                    }
+
+                    samples = _.reduce(samples, function(acc, next){
+                      acc[next] = true;
+                    },{});
+                    geneSampleMap[gene.hugoGeneSymbol].sampleUids = samples;
                   })
-                });
-                if (panelSamplesMap.hasOwnProperty(wholeExomeSequencedPanelId)) {
-                  _.each(geneSampleMap, function(item) {
-                    item.sampleUids = item.sampleUids.concat(panelSamplesMap[wholeExomeSequencedPanelId]);
-                  });
-                }
-                
-                var _sortedMap = {};
-                _.each(geneSampleMap, function(item) {
-                  var _json = JSON.stringify(item.sampleUids);
-                  if (_sortedMap.hasOwnProperty(_json)) {
-                    item.sampleUids = _sortedMap[_json];
-                  } else {
-                    item.sampleUids = item.sampleUids.sort();
-                    _sortedMap[_json] = item.sampleUids;
-                  }
                 });
                 _def.resolve(geneSampleMap);
               },
@@ -1446,7 +1438,10 @@ window.DataManagerForIviz = (function($, _) {
             });
           } else {
             _.each(geneSampleMap, function(item) {
-              item.sampleUids = panelSamplesMap[wholeExomeSequencedPanelId].sort();
+              var samples = _.reduce(panelSamplesMap[wholeExomeSequencedPanelId], function(acc, next){
+                acc[next] = true;
+              },{});
+              item.sampleUids = samples;
             });
             _def.resolve(geneSampleMap);
           }
@@ -1454,14 +1449,14 @@ window.DataManagerForIviz = (function($, _) {
         return _def.promise();
       },
       updateGenePanelMap: function(_map, _selectedSampleUids) {
-        if (_selectedSampleUids) {
-          _selectedSampleUids = _selectedSampleUids.sort();
-        }
-
-        _.each(_map, function(item) {
-          item.sampleNum = content.util.intersection(item.sampleUids, _selectedSampleUids).length;
+        _.each(_map, function(item){
+          item.sampleNum = _.reduce(_selectedSampleUids, function(acc,sample){
+            if(item.sampleUids[sample]){
+              acc = acc +1
+            }
+            return acc
+          },0);
         });
-
         return _map;
       },
 
