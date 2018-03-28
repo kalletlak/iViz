@@ -1412,6 +1412,7 @@ window.DataManagerForIviz = (function($, _) {
               dataType: 'json',
               contentType: "application/json; charset=utf-8",
               success: function(panels) {
+                console.time('Building samples map');
                 _.each(panels, function(panel) {
                   _.each(panel.genes, function(gene) {
                     if (!geneSampleMap[gene.hugoGeneSymbol]) {
@@ -1419,17 +1420,19 @@ window.DataManagerForIviz = (function($, _) {
                         sampleUids: {}
                       }
                     }
-                    var samples = geneSampleMap[gene.hugoGeneSymbol].sampleUids.concat(panelSamplesMap[panel.genePanelId]);
+                    var samples = panelSamplesMap[panel.genePanelId];
                     if (panelSamplesMap.hasOwnProperty(wholeExomeSequencedPanelId)) {
                       samples = samples.concat(panelSamplesMap[wholeExomeSequencedPanelId]);
                     }
 
-                    samples = _.reduce(samples, function(acc, next){
+                    samples = _.reduce(samples, function(acc, next) {
                       acc[next] = true;
-                    },{});
+                      return acc;
+                    }, geneSampleMap[gene.hugoGeneSymbol].sampleUids);
                     geneSampleMap[gene.hugoGeneSymbol].sampleUids = samples;
                   })
                 });
+                console.timeEnd('Building samples map');
                 _def.resolve(geneSampleMap);
               },
               fail: function() {
@@ -1437,18 +1440,23 @@ window.DataManagerForIviz = (function($, _) {
               }
             });
           } else {
+            console.time('Building samples map');
             _.each(geneSampleMap, function(item) {
               var samples = _.reduce(panelSamplesMap[wholeExomeSequencedPanelId], function(acc, next){
                 acc[next] = true;
+                return acc;
               },{});
               item.sampleUids = samples;
             });
+
+            console.timeEnd('Building samples map');
             _def.resolve(geneSampleMap);
           }
         });
         return _def.promise();
       },
       updateGenePanelMap: function(_map, _selectedSampleUids) {
+        console.time('Finding intersection');
         _.each(_map, function(item){
           item.sampleNum = _.reduce(_selectedSampleUids, function(acc,sample){
             if(item.sampleUids[sample]){
@@ -1457,6 +1465,7 @@ window.DataManagerForIviz = (function($, _) {
             return acc
           },0);
         });
+        console.timeEnd('Finding intersection');
         return _map;
       },
 
